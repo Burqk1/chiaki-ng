@@ -47,6 +47,7 @@ class QWidget;
 class QLabel;
 class QVBoxLayout;
 class QHBoxLayout;
+class FrameGenerator;
 class QFrame;
 class StatsOverlayWidget;
 class BufferedPlaybackPacerThread;
@@ -342,6 +343,10 @@ private:
     pl_opengl placebo_opengl = {};
     pl_swapchain placebo_swapchain = {};
     pl_renderer placebo_renderer = {};
+    FrameGenerator *frame_generator = nullptr;
+    struct pl_frame frame_generator_output = {};
+    bool frame_generator_has_output = false;
+    qint64 frame_generator_last_log_us = 0;
     pl_queue placebo_queue = {};
     std::array<pl_tex, 8> placebo_tex{};
     VkSurfaceKHR surface = VK_NULL_HANDLE;

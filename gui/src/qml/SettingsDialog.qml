@@ -995,6 +995,25 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
+                        text: qsTr("Frame Generation:")
+                    }
+
+                    C.CheckBox {
+                        enabled: Chiaki.settings.directFrameMapping
+                        checked: Chiaki.settings.frameGeneration
+                        onClicked: Chiaki.settings.frameGeneration = checked
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 500
+                        ToolTip.text: qsTr("Replaces the repeated frames of 30 fps games with generated in-between frames (smooth 60 fps). Adds about one frame of latency only when active. Requires Direct Mapping.")
+                    }
+
+                    Label {
+                        Layout.alignment: Qt.AlignRight
+                        text: qsTr("(Unchecked)")
+                    }
+
+                    Label {
+                        Layout.alignment: Qt.AlignRight
                         text: qsTr("Renderer Backend:")
                     }
 

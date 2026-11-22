@@ -53,6 +53,8 @@ set(SOURCE_FILES
 	src/qmlsettings.cpp
 	include/qmlsvgprovider.h
 	src/qmlsvgprovider.cpp
+	include/framegen.h
+	src/framegen.cpp
 	include/systemdinhibit.h
 	src/systemdinhibit.cpp
 	)

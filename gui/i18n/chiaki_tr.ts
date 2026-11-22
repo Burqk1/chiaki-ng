@@ -1775,6 +1775,14 @@ Bu şunları sağlar:
 <context>
     <name>SettingsDialog</name>
     <message>
+        <source>Frame Generation:</source>
+        <translation>Ara Kare Üretimi (Frame Gen):</translation>
+    </message>
+    <message>
+        <source>Replaces the repeated frames of 30 fps games with generated in-between frames (smooth 60 fps). Adds about one frame of latency only when active. Requires Direct Mapping.</source>
+        <translation>30 FPS oyunlarda tekrar eden kareleri üretilmiş ara karelerle değiştirir (akıcı 60 FPS). Yalnızca devredeyken yaklaşık bir kare gecikme ekler. Doğrudan Eşleme (Direct Mapping) gerektirir.</translation>
+    </message>
+    <message>
         <source>Settings</source>
         <translation>Ayarlar</translation>
     </message>

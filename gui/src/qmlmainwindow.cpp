@@ -4,6 +4,7 @@
 #include "chiaki/log.h"
 #include "chiaki/time.h"
 #include "streamsession.h"
+#include "framegen.h"
 
 #include <qpa/qplatformnativeinterface.h>
 
@@ -2678,6 +2679,8 @@ QmlMainWindow::~QmlMainWindow()
     }
     pl_cache_destroy(&placebo_cache);
     pl_queue_destroy(&placebo_queue);
+    delete frame_generator;
+    frame_generator = nullptr;
     pl_renderer_destroy(&placebo_renderer);
     // User shader hooks hold a reference to the GPU (their descriptors destroy
     // buffers/textures via p->gpu), so they must be released before the GPU is.
@@ -6793,7 +6796,11 @@ void QmlMainWindow::render()
         if (reset_direct_frame) {
             pl_unmap_avframe(placeboGpu(), &direct_frame);
             direct_frame = {};
+            if (frame_generator)
+                frame_generator->reset();
+            frame_generator_has_output = false;
         }
+        const bool direct_frame_is_new = incoming != nullptr;
         if (incoming) {
             pl_unmap_avframe(placeboGpu(), &direct_frame);
             direct_frame = {};
@@ -6810,6 +6817,36 @@ void QmlMainWindow::render()
             av_frame_free(&incoming);
         }
         direct_render_frame = direct_frame;
+        // Frame generation: replace repeated pictures of 30 fps games with
+        // generated in-between pictures (see framegen.h).
+        const bool frame_generation_wanted = has_settings && stream_active &&
+            settings->GetFrameGeneration() && direct_frame.num_planes > 0;
+        if (frame_generation_wanted) {
+            if (!frame_generator) {
+                frame_generator = new FrameGenerator(placebo_log, placeboGpu());
+                qCInfo(chiakiGui) << "[framegen] created, usable=" << frame_generator->usable();
+            }
+            if (direct_frame_is_new) {
+                const pl_frame *generated = frame_generator->process(direct_frame);
+                frame_generator_has_output = generated != nullptr;
+                if (generated)
+                    frame_generator_output = *generated;
+                const qint64 fg_now_us = static_cast<qint64>(chiaki_time_now_monotonic_us());
+                if (fg_now_us - frame_generator_last_log_us >= 10000000) {
+                    frame_generator_last_log_us = fg_now_us;
+                    const auto &st = frame_generator->stats();
+                    qCInfo(chiakiGui).nospace() << "[framegen] in=" << st.frames_in
+                        << " repeats=" << st.repeats << " generated=" << st.generated
+                        << " held=" << st.held_shown << " passthrough=" << st.passthrough
+                        << " cuts=" << st.scene_cuts << " usable=" << frame_generator->usable();
+                }
+            }
+            if (frame_generator_has_output)
+                direct_render_frame = frame_generator_output;
+        } else if (frame_generator) {
+            frame_generator->reset();
+            frame_generator_has_output = false;
+        }
         frame_mix = {};
         frame_mix.num_frames = direct_frame.num_planes > 0 ? 1 : 0;
         frame_mix.frames = direct_frames;
