@@ -14,6 +14,7 @@ endif()
 
 find_package(Qt6 COMPONENTS WebEngineQuick)
 find_package(Qt6 COMPONENTS DBus)
+find_package(Qt6 COMPONENTS LinguistTools)
 
 if(WIN32)
 	add_definitions(-DWIN32_LEAN_AND_MEAN)
@@ -99,6 +100,11 @@ target_link_libraries(placebo-libav-impl PkgConfig::LIBPLACEBO FFMPEG::avcodec F
 target_link_libraries(chiaki PkgConfig::LIBPLACEBO placebo-libav-impl)
 
 target_link_libraries(chiaki chiaki-lib)
+
+if(Qt6LinguistTools_FOUND)
+	qt_add_translations(chiaki TS_FILES i18n/chiaki_tr.ts RESOURCE_PREFIX /i18n LUPDATE_OPTIONS -no-obsolete)
+	target_compile_definitions(chiaki PRIVATE CHIAKI_HAVE_TRANSLATIONS)
+endif()
 if(CHIAKI_ENABLE_CLI)
 	add_definitions(-DCHIAKI_ENABLE_CLI)
 	target_link_libraries(chiaki chiaki-cli-lib)

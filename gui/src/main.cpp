@@ -20,6 +20,8 @@ int main(int argc, char *argv[]) { return real_main(argc, argv); }
 #include <discoverymanager.h>
 #include <qmlmainwindow.h>
 #include <QApplication>
+#include <QTranslator>
+#include <QLocale>
 #include <QtTypes>
 
 #ifdef CHIAKI_ENABLE_CLI
@@ -142,6 +144,17 @@ int real_main(int argc, char *argv[])
 	QtWebEngineQuick::initialize();
 #endif
 	QApplication app(argc, argv);
+
+#ifdef CHIAKI_HAVE_TRANSLATIONS
+	// UI language: CHIAKI_LANG env var (e.g. "tr", "en") overrides the system locale
+	static QTranslator ui_translator;
+	{
+		const QString lang_override = qEnvironmentVariable("CHIAKI_LANG");
+		const QLocale ui_locale = lang_override.isEmpty() ? QLocale::system() : QLocale(lang_override);
+		if(ui_translator.load(ui_locale, QStringLiteral("chiaki"), QStringLiteral("_"), QStringLiteral(":/i18n")))
+			app.installTranslator(&ui_translator);
+	}
+#endif
 
 #ifdef Q_OS_MACOS
 	QGuiApplication::setWindowIcon(QIcon(":/icons/chiaking_macos.svg"));
