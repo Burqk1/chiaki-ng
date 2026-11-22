@@ -1002,6 +1002,19 @@ void QmlSettings::setFrameGeneration(bool enabled)
     emit frameGenerationChanged();
 }
 
+int QmlSettings::sharpness() const
+{
+    return settings->GetSharpness();
+}
+
+void QmlSettings::setSharpness(int value)
+{
+    if (value == settings->GetSharpness())
+        return;
+    settings->SetSharpness(value);
+    emit sharpnessChanged();
+}
+
 void QmlSettings::setPlaceboFrameMixer(int mixer)
 {
     settings->SetPlaceboFrameMixer(static_cast<PlaceboFrameMixer>(mixer));

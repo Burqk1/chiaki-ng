@@ -522,6 +522,8 @@ class Settings : public QObject
 		void SetDirectFrameMapping(bool enabled) { settings.setValue("settings/direct_frame_mapping", enabled); }
 		bool GetFrameGeneration() const { return settings.value("settings/frame_generation", false).toBool(); }
 		void SetFrameGeneration(bool enabled) { settings.setValue("settings/frame_generation", enabled); }
+		int GetSharpness() const { return qBound(0, settings.value("settings/sharpness", 0).toInt(), 100); }
+		void SetSharpness(int value) { settings.setValue("settings/sharpness", qBound(0, value, 100)); }
 		void SetPlaceboFrameMixer(PlaceboFrameMixer frame_mixer);
 
 		bool GetPlaceboDeinterlaceEnabled() const;

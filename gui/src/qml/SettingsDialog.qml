@@ -1014,6 +1014,33 @@ DialogView {
 
                     Label {
                         Layout.alignment: Qt.AlignRight
+                        text: qsTr("Sharpness (CAS):")
+                    }
+
+                    C.Slider {
+                        Layout.preferredWidth: 300
+                        from: 0
+                        to: 100
+                        stepSize: 5
+                        value: Chiaki.settings.sharpness
+                        onMoved: Chiaki.settings.sharpness = value
+                        Label {
+                            anchors {
+                                left: parent.right
+                                verticalCenter: parent.verticalCenter
+                                leftMargin: 10
+                            }
+                            text: parent.value > 0 ? qsTr("%1%").arg(parent.value.toFixed(0)) : qsTr("Off")
+                        }
+                    }
+
+                    Label {
+                        Layout.alignment: Qt.AlignRight
+                        text: qsTr("(Off)")
+                    }
+
+                    Label {
+                        Layout.alignment: Qt.AlignRight
                         text: qsTr("Renderer Backend:")
                     }
 

@@ -1775,6 +1775,18 @@ Bu şunları sağlar:
 <context>
     <name>SettingsDialog</name>
     <message>
+        <source>Sharpness (CAS):</source>
+        <translation>Keskinlik (CAS):</translation>
+    </message>
+    <message>
+        <source>%1%</source>
+        <translation>%%1</translation>
+    </message>
+    <message>
+        <source>(Off)</source>
+        <translation>(Kapalı)</translation>
+    </message>
+    <message>
         <source>Frame Generation:</source>
         <translation>Ara Kare Üretimi (Frame Gen):</translation>
     </message>

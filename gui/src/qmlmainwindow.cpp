@@ -2687,6 +2687,7 @@ QmlMainWindow::~QmlMainWindow()
     pl_mpv_user_shader_destroy(&fsr_hook);
     pl_mpv_user_shader_destroy(&fsrcnnx_hook_8);
     pl_mpv_user_shader_destroy(&fsrcnnx_hook_16);
+    pl_mpv_user_shader_destroy(&cas_hook);
     if (render_backend == RenderBackend::Vulkan) {
         pl_vulkan_destroy(&placebo_vulkan);
         pl_vk_inst_destroy(&placebo_vk_inst);
@@ -5331,6 +5332,7 @@ renderer_backend_ready:
     this->fsr_hook = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSR.glsl"));
     this->fsrcnnx_hook_8 = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSRCNNX_x2_8-0-4-1.glsl"));
     this->fsrcnnx_hook_16 = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/FSRCNNX_x2_16-0-4-1.glsl"));
+    this->cas_hook = load_mpv_hook(placeboGpu(), QStringLiteral(":/shaders/CAS.glsl"));
 
 
     switch (settings->GetPlaceboPreset()) {
@@ -7576,10 +7578,27 @@ void QmlMainWindow::render()
                                                fsr_hook, fsrcnnx_hook_8, fsrcnnx_hook_16);
         }
     }
-    const struct pl_hook *active_hooks[] = {fsrcnnx_hook};
-    if (fsrcnnx_hook) {
+    // Optional CAS sharpening runs on the final output, after any upscaler.
+    const int sharpness = (has_settings && stream_active) ? settings->GetSharpness() : 0;
+    const struct pl_hook *sharpen_hook = (sharpness > 0 && cas_hook) ? cas_hook : nullptr;
+    if (sharpen_hook) {
+        for (int i = 0; i < sharpen_hook->num_parameters; i++) {
+            const struct pl_hook_par &par = sharpen_hook->parameters[i];
+            if (par.data && par.type == PL_VAR_FLOAT && qstrcmp(par.name, "cas_sharpness") == 0)
+                par.data->f = static_cast<float>(sharpness) / 100.0f;
+        }
+    }
+    const struct pl_hook *active_hooks[2] = {};
+    int active_hook_count = 0;
+    if (fsrcnnx_hook)
+        active_hooks[active_hook_count++] = fsrcnnx_hook;
+    if (sharpen_hook)
+        active_hooks[active_hook_count++] = sharpen_hook;
+    if (active_hook_count > 0) {
         params.hooks = active_hooks;
-        params.num_hooks = 1;
+        params.num_hooks = active_hook_count;
+    }
+    if (fsrcnnx_hook) {
         switch (video_preset) {
         case VideoPreset::HighQualitySpatial:
             if (fsrcnnx_hook == fsr_hook)
